@@ -12,19 +12,24 @@ type PostProps = {
 }
 
 export default function PostCard({ id, title, body, authorName }: PostProps) {
-  const [isOpen, setIsOpen] = useState(false) // Estado del modal
-  const [isDeleting, setIsDeleting] = useState(false) // Estado de carga (útil para internet lento)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const handleDelete = async () => {
     setIsDeleting(true)
-    const result = await deletePost(id)
     
-    if (!result.success) {
-      alert(result.message) // Manejo simple de error
-      setIsDeleting(false)
-    } else {
-      // Si tuvo éxito, cerramos el modal. La página se actualizará sola.
-      setIsOpen(false) 
+    try {
+      const result = await deletePost(id)
+      
+      if (!result.success) {
+        alert(result.message) 
+      } else {
+        setIsOpen(false) 
+      }
+    } catch (e) {
+      console.error(e)
+      alert("Error de conexión. Verifica tu internet e intenta de nuevo.")
+    } finally {
       setIsDeleting(false)
     }
   }
@@ -46,7 +51,6 @@ export default function PostCard({ id, title, body, authorName }: PostProps) {
         </button>
       </div>
 
-      {/* Modal de Confirmación */}
       {isOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
@@ -66,9 +70,9 @@ export default function PostCard({ id, title, body, authorName }: PostProps) {
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                className="px-4 py-2 bg-red-600 text-white rounded text-sm font-medium hover:bg-red-700 disabled:opacity-50 flex items-center"
               >
-                {isDeleting ? 'Borrando...' : 'Confirmar'}
+                {isDeleting ? 'Intentando borrar...' : 'Confirmar'}
               </button>
             </div>
           </div>
